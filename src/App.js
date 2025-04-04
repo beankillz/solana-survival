@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react
 import styled from 'styled-components';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import ProgressMap from './components/ProgressMap';
+import logo from './assets/images/solanaLogo.png';
 import Level1 from './pages/Level1';
 import Level2 from './pages/Level2';
 import Level3 from './pages/Level3';
