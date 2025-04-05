@@ -1,6 +1,14 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+
+// Solana-inspired colors (consistent with App.js)
+const colors = {
+  solanaTeal: '#00FFA3',
+  solanaPurple: '#9945FF',
+  solanaDark: '#141414',
+  solanaGray: '#D3D3D3',
+};
 
 const MapContainer = styled.div`
   display: flex;
@@ -13,18 +21,34 @@ const LevelDot = styled.div`
   width: 25px;
   height: 25px;
   border-radius: 50%;
-  background: ${(props) => (props.active ? '#00ff00' : '#cccccc')};
-  border: 2px solid ${(props) => (props.active ? '#00ff00' : '#666666')};
-  box-shadow: ${(props) => (props.active ? '0 0 15px #00ff00' : 'none')};
+  background: ${(props) => (props.active ? colors.solanaTeal : colors.solanaGray)};
+  border: 2px solid ${(props) => (props.active ? colors.solanaTeal : colors.solanaDark)};
+  box-shadow: ${(props) => (props.active ? `0 0 15px ${colors.solanaTeal}` : 'none')};
   transition: all 0.3s ease;
 `;
 
 const LevelLabel = styled.span`
   font-family: 'Orbitron', sans-serif;
   font-size: 1rem;
-  color: ${(props) => (props.active ? '#00ff00' : '#cccccc')};
-  text-shadow: ${(props) => (props.active ? '0 0 8px #00ff00' : 'none')};
+  color: ${(props) => (props.active ? colors.solanaTeal : colors.solanaGray)};
+  text-shadow: ${(props) => (props.active ? `0 0 8px ${colors.solanaTeal}` : 'none')};
   margin-top: 8px;
+`;
+
+const LevelLink = styled(Link)`
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:focus {
+    outline: 2px solid ${colors.solanaPurple};
+    outline-offset: 2px;
+  }
 `;
 
 const ProgressMap = () => {
@@ -41,13 +65,12 @@ const ProgressMap = () => {
   return (
     <MapContainer>
       {levels.map((level) => (
-        <div key={level.path} style={{ textAlign: 'center' }}>
+        <LevelLink key={level.path} to={level.path} aria-label={`Go to ${level.label}`}>
           <LevelDot active={location.pathname === level.path} />
-          <br />
           <LevelLabel active={location.pathname === level.path}>
             {level.label}
           </LevelLabel>
-        </div>
+        </LevelLink>
       ))}
     </MapContainer>
   );
