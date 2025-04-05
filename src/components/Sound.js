@@ -1,4 +1,5 @@
-import React from 'react'; // Add this import
+import React from 'react';
+import PropTypes from 'prop-types'; // Add this import
 import computerBeepsSound from '../assets/sounds/computer-beeps.wav';
 import applaudClapSound from '../assets/sounds/applaud-clap.wav';
 
@@ -15,13 +16,19 @@ const playSound = (type) => {
 };
 
 const Sound = ({ play, type }) => {
-  React.useEffect(() => { // Now React is defined
+  React.useEffect(() => {
     if (play) {
       playSound(type);
     }
   }, [play, type]);
 
   return null;
+};
+
+// Add PropTypes validation
+Sound.propTypes = {
+  play: PropTypes.bool.isRequired,
+  type: PropTypes.string.isRequired,
 };
 
 export { Sound, playSound };

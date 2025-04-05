@@ -2,7 +2,6 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
-// Solana-inspired colors (consistent with App.js)
 const colors = {
   solanaTeal: '#00FFA3',
   solanaPurple: '#9945FF',
@@ -15,11 +14,12 @@ const MapContainer = styled.div`
   justify-content: center;
   gap: 25px;
   margin-bottom: 40px;
+  flex-wrap: wrap;
 `;
 
 const LevelDot = styled.div`
-  width: 25px;
-  height: 25px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: ${(props) => (props.active ? colors.solanaTeal : colors.solanaGray)};
   border: 2px solid ${(props) => (props.active ? colors.solanaTeal : colors.solanaDark)};
@@ -40,30 +40,23 @@ const LevelLink = styled(Link)`
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  &:hover {
-    opacity: 0.9;
-  }
-
-  &:focus {
-    outline: 2px solid ${colors.solanaPurple};
-    outline-offset: 2px;
-  }
+  &:hover { opacity: 0.9; }
+  &:focus { outline: 2px solid ${colors.solanaPurple}; outline-offset: 2px; }
 `;
 
 const ProgressMap = () => {
   const location = useLocation();
   const levels = [
     { path: '/', label: 'Start' },
-    { path: '/level1', label: 'Level 1' },
-    { path: '/level2', label: 'Level 2' },
-    { path: '/level3', label: 'Level 3' },
-    { path: '/level4', label: 'Level 4' },
-    { path: '/level5', label: 'Level 5' },
+    { path: '/level1', label: 'Wallet' },
+    { path: '/level2', label: 'NFTs' },
+    { path: '/level3', label: 'Staking' },
+    { path: '/level4', label: 'Trading' },
+    { path: '/level5', label: 'Governance' },
   ];
 
   return (
-    <MapContainer>
+    <MapContainer role="navigation" aria-label="Progress Map">
       {levels.map((level) => (
         <LevelLink key={level.path} to={level.path} aria-label={`Go to ${level.label}`}>
           <LevelDot active={location.pathname === level.path} />

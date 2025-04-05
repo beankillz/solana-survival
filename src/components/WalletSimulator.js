@@ -2,15 +2,23 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useGameContext } from '../context/GameContext';
 import { playSound } from './Sound';
+import { Connection, PublicKey } from '@solana/web3.js';
+
+const colors = {
+  solanaTeal: '#00FFA3',
+  solanaPurple: '#9945FF',
+  solanaDark: '#141414',
+  solanaGray: '#D3D3D3',
+};
 
 const SimulatorContainer = styled.div`
   font-family: 'Montserrat', sans-serif;
-  color: #ffffff;
-  background: #0d0221;
+  color: #FFFFFF;
+  background: ${colors.solanaDark};
   padding: 20px;
-  border: 2px solid #00ffff;
+  border: 2px solid ${colors.solanaTeal};
   border-radius: 10px;
-  box-shadow: 0 0 15px #00ffff, inset 0 0 5px #00ffff;
+  box-shadow: 0 0 15px ${colors.solanaTeal};
   max-width: 600px;
   margin: 20px auto;
 `;
@@ -18,116 +26,105 @@ const SimulatorContainer = styled.div`
 const SimulatorTitle = styled.h3`
   font-family: 'Orbitron', sans-serif;
   font-size: 1.3rem;
-  color: #ff00ff;
-  text-shadow: 0 0 10px #ff00ff;
+  color: ${colors.solanaPurple};
+  text-shadow: 0 0 10px ${colors.solanaPurple};
   margin-bottom: 15px;
-`;
-
-const InputField = styled.input`
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
-  color: #ffffff;
-  background: #1a0d3d;
-  border: 2px solid #00ffff;
-  border-radius: 5px;
-  padding: 8px;
-  margin: 10px 0;
-  width: 100%;
-  box-shadow: 0 0 5px #00ffff;
-`;
-
-const SeedPhrase = styled.div`
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1rem;
-  color: #00ffff;
-  background: #1a0d3d;
-  padding: 10px;
-  border: 2px solid #00ffff;
-  border-radius: 5px;
-  margin: 10px 0;
-  text-shadow: 0 0 5px #00ffff;
-  word-break: break-all;
 `;
 
 const ActionButton = styled.button`
   font-family: 'Orbitron', sans-serif;
   font-size: 1rem;
-  color: #00ff00;
+  color: ${colors.solanaTeal};
   background: transparent;
-  border: 2px solid #00ff00;
+  border: 2px solid ${colors.solanaTeal};
   border-radius: 5px;
   padding: 10px 20px;
   margin: 10px;
   cursor: pointer;
-  text-shadow: 0 0 5px #00ff00;
+  text-shadow: 0 0 5px ${colors.solanaTeal};
   transition: all 0.3s ease;
-
   &:hover {
-    color: #cc00ff;
-    border-color: #cc00ff;
-    text-shadow: 0 0 10px #cc00ff;
-    box-shadow: 0 0 15px #cc00ff;
+    color: ${colors.solanaPurple};
+    border-color: ${colors.solanaPurple};
+    text-shadow: 0 0 10px ${colors.solanaPurple};
+    box-shadow: 0 0 15px ${colors.solanaPurple};
     transform: scale(1.05);
   }
 `;
 
+const Spinner = styled.div`
+  border: 4px solid ${colors.solanaGray};
+  border-top: 4px solid ${colors.solanaTeal};
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+  margin: 10px auto;
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+`;
+
 const WalletSimulator = () => {
   const { updatePlayerState } = useGameContext();
-  const [walletName, setWalletName] = useState('');
-  const [seedPhrase, setSeedPhrase] = useState('');
-  const [isWalletCreated, setIsWalletCreated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [balance, setBalance] = useState(null);
 
-  const generateSeedPhrase = () => {
-    const mockSeed = 'apple banana cherry dog elephant fox grape';
-    setSeedPhrase(mockSeed);
-    playSound('click');
-  };
-
-  const createWallet = () => {
-    if (walletName && seedPhrase) {
-      setIsWalletCreated(true);
+  const connectRealWallet = async () => {
+    setLoading(true);
+    const { solana } = window;
+    if (!solana) {
+      alert('Please install Phantom Wallet!');
+      setLoading(false);
+      return;
+    }
+    try {
+      const response = await solana.connect();
+      const connection = new Connection('https://api.mainnet-beta.solana.com');
+      const bal = await connection.getBalance(new PublicKey(response.publicKey));
+      const sol = bal / 1e9;
+      setBalance(sol);
       updatePlayerState({
-        sol: 10,
+        sol: sol,
         choices: ['wallet-created'],
       });
-      alert('Wallet created successfully! Secure your seed phrase.');
       playSound('click');
-    } else {
-      alert('Please enter a wallet name and generate a seed phrase.');
+      alert('Phantom Wallet connected! Balance synced.');
+    } catch (error) {
+      console.error('Wallet connect failed:', error);
+      alert('Connection failed. Try again!');
     }
+    setLoading(false);
+  };
+
+  const createDemoWallet = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setBalance(10); // Mock 10 SOL
+      updatePlayerState({
+        sol: 10,
+        choices: ['wallet-created', 'demo-mode'],
+      });
+      playSound('click');
+      alert('Demo Phantom Wallet created! You’ve got 10 SOL to play with.');
+      setLoading(false);
+    }, 1000); // Simulate delay
   };
 
   return (
-    <SimulatorContainer>
+    <SimulatorContainer role="region" aria-label="Phantom Wallet Simulator">
       <SimulatorTitle>Phantom Wallet Simulator</SimulatorTitle>
-      {!isWalletCreated ? (
+      {balance === null ? (
         <>
-          <p>Step 1: Name your wallet.</p>
-          <InputField
-            type="text"
-            value={walletName}
-            onChange={(e) => setWalletName(e.target.value)}
-            placeholder="Enter wallet name"
-          />
-          <p>Step 2: Generate a seed phrase (12 words).</p>
-          <ActionButton onClick={generateSeedPhrase}>
-            Generate Seed Phrase
+          <p>Connect your Phantom Wallet or create a demo one to begin!</p>
+          <ActionButton onClick={connectRealWallet} aria-label="Connect real Phantom Wallet">
+            Link Phantom Wallet
           </ActionButton>
-          {seedPhrase && (
-            <SeedPhrase>
-              Seed Phrase: {seedPhrase}<br />
-              <strong>Warning:</strong> Never share this phrase with anyone!
-            </SeedPhrase>
-          )}
-          <p>Step 3: Create your wallet.</p>
-          <ActionButton onClick={createWallet} disabled={!seedPhrase}>
-            Create Wallet
+          <ActionButton onClick={createDemoWallet} aria-label="Create demo Phantom Wallet">
+            Create Demo Wallet
           </ActionButton>
+          {loading && <Spinner />}
         </>
       ) : (
-        <p>
-          Wallet "{walletName}" created! You’ve earned 10 SOL. Proceed to the next step.
-        </p>
+        <p>Wallet active! Balance: {balance.toFixed(2)} SOL. Proceed to explore.</p>
       )}
     </SimulatorContainer>
   );
